@@ -26,17 +26,13 @@ jobs:
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      - name: Configure Bubblewrap
-        run: |
-          mkdir -p ~/.bubblewrap
-          # Burada ANDROID_HOME kullanarak asıl hatayı çözüyoruz
-          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"${ANDROID_HOME}\"}" > ~/.bubblewrap/config.json
-
       - name: Build Android App Bundle
+        # Buradaki env kısmı robota "Java burada, SDK burada" diye bağıran kısımdır
         run: |
-          # twa-manifest.json dosyasını kullanarak paketliyoruz
           bubblewrap build --project=twa-manifest.json --yes
         env:
+          BUBBLEWRAP_JDK_PATH: ${{ env.JAVA_HOME }}
+          BUBBLEWRAP_ANDROID_SDK_PATH: /usr/local/lib/android/sdk
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
