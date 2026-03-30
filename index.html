@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KPSS Coğrafya - Harita Quiz</title>
+    <meta name="description" content="KPSS Coğrafya sınavına interaktif harita üzerinde hazırlanın. Türkiye'nin dağları, gölleri, nehirleri, şehirleri ve daha fazlası.">
+    
+    <!-- PWA Setup -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0a0e1a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+        
+        <!-- Left Column: Branding & Controls -->
+        <div class="splash-col-left">
+            <div class="splash-icon">🌍</div>
+            <h1 class="splash-title">KPSS Coğrafya</h1>
+            <h2 class="splash-subtitle">Harita Soru Havuzu</h2>
+            <p class="splash-desc" style="margin-bottom: 20px;">Türkiye'nin dağları, ovaları, gölleri ve şehirleri nerede? Harita üzerinde test et.</p>
+
+            <div class="mode-select">
+                <h3>Oyun Modu Seçimi</h3>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="find_on_map">
+                        <div class="mode-icon">📍</div>
+                        <div class="mode-text-wrap">
+                            <span class="mode-label">Haritada Bul</span>
+                            <span class="mode-desc">İsim verilir, haritada tıklarsın</span>
+                        </div>
+                    </button>
+                    <button class="mode-btn" data-mode="guess_name" id="modeGuessBtn">
+                        <div class="mode-icon">❓</div>
+                        <div class="mode-text-wrap">
+                            <span class="mode-label">İsim Tahmin Et</span>
+                            <span class="mode-desc">İl işaretlenir, adını seçersin</span>
+                        </div>
+                    </button>
+                    <button class="mode-btn" data-mode="speed_round">
+                        <div class="mode-icon">⚡</div>
+                        <div class="mode-text-wrap">
+                            <span class="mode-label">Hızlı Tur</span>
+                            <span class="mode-desc">60 saniyede en çok doğruyu yakala!</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <button id="startBtn" class="start-btn">
+                <span>Oyuna Başla 🚀</span>
+            </button>
+            <button id="settingsBtn" class="settings-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Ayarlar
+            </button>
+            
+            <div class="stats-preview">
+                <div class="stat-item">
+                    <span id="bestStreakDisplay" class="stat-value">0</span>
+                    <span class="stat-label">En Uzun Seri 🔥</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Categories -->
+        <div class="splash-col-right">
+            <div class="category-header">
+                Konu Başlıkları
+                <span class="category-header-hint">(Hepsi seçili)</span>
+            </div>
+            <div class="category-scroll-area" id="categoryButtons">
+                <!-- Categories injected here by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <div class="loading-text">Harita Verileri Yükleniyor...</div>
+    </div>
+
+    <!-- Quiz & Map Screen -->
+    <div id="quizScreen" class="quiz-screen hidden">
+        
+        <!-- Top Navigation Bar -->
+        <div class="quiz-top-bar">
+            <button id="backBtn" class="back-btn" title="Ana Menüye Dön">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </button>
+            <div class="progress-col">
+                <div class="progress-text" id="progressText">Soru: 1/10</div>
+                <div class="progress-bar">
+                    <div id="progressBar" class="progress-fill"></div>
+                </div>
+            </div>
+            <div id="timerBadge" class="timer-badge hidden">
+                <span class="timer-icon">⏱️</span>
+                <span id="timerText">60</span>
+            </div>
+            <div class="score-badge">
+                <span class="score-icon">🌟</span>
+                <span id="scoreText">Puan: 0</span>
+            </div>
+        </div>
+
+        <!-- Leaflet Map Container -->
+        <div id="map"></div>
+
+        <!-- Bottom Question Panel -->
+        <div class="quiz-bottom-panel">
+            <div class="q-header">
+                <span id="questionCategory" class="cat-badge">Dağlar</span>
+                <button id="hintBtn" class="hint-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                    İpucu
+                </button>
+            </div>
+            
+            <div id="hintBox" class="hint-box hidden">Buraya ipucu gelecek...</div>
+            
+            <div class="q-content-row">
+                <div class="q-text-col">
+                    <div id="questionText" class="q-text">Ağrı Dağı nerede?</div>
+                    <div id="instructionText" class="q-inst">Türkiye haritası üzerinde ilgili ili bulun.</div>
+                </div>
+                <div id="streakIndicator" class="streak-indicator hidden">🔥 3'lü Seri!</div>
+            </div>
+
+            <div id="choicesContainer" class="choices hidden">
+                <!-- Multiple choice buttons injected here -->
+            </div>
+            
+            <!-- Feedback overlay specifically for choices -->
+            <div id="choiceFeedback" class="choice-feedback hidden"></div>
+        </div>
+    </div>
+
+    <!-- Feedback Overlay (for map clicks) -->
+    <div id="feedbackOverlay" class="feedback-overlay hidden">
+        <div id="feedbackCard" class="feedback-card">
+            <div id="feedbackIcon" class="feedback-icon">✅</div>
+            <h3 id="feedbackTitle">Doğru!</h3>
+            <p id="feedbackDesc" class="feedback-desc">Tebrikler, harika gidiyorsun.</p>
+            <button id="nextBtn" class="next-btn">Sonraki Soru ➡️</button>
+        </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="resultScreen" class="result-screen hidden">
+        <div class="result-content">
+            <div class="result-icon">🏆</div>
+            <h2 class="result-title">Oyun Bitti!</h2>
+            <p class="result-subtitle" id="finalTitle">Coğrafya uzmanı olma yolundasın.</p>
+            
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="result-stat-value" id="finalScore">1500</div>
+                    <div class="result-stat-label">Toplam Puan</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value streak-text">🔥 <span id="finalStreak">5</span></div>
+                    <div class="result-stat-label">Max Seri</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value correct-text">✅ <span id="finalCorrect">8</span></div>
+                    <div class="result-stat-label">Doğru</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value wrong-text">❌ <span id="finalWrong">2</span></div>
+                    <div class="result-stat-label">Yanlış</div>
+                </div>
+            </div>
+
+            <!-- Weak Category Analysis -->
+            <div id="weakCategoryBox" class="weak-category-box hidden"></div>
+
+            <!-- New Badges Earned -->
+            <div id="badgeBox" class="badge-box hidden"></div>
+            
+            <div class="result-actions">
+                <button id="restartBtn" class="btn-primary">Tekrar Oyna 🔄</button>
+                <button id="homeBtn" class="btn-secondary">Ana Menü 🏠</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Overlay -->
+    <div id="settingsOverlay" class="settings-overlay hidden">
+        <div class="settings-card">
+            <div class="settings-title">⚙️ Ayarlar</div>
+
+            <div class="setting-group">
+                <div class="setting-label">🌓 Görünüm (Dark/Light)</div>
+                <div class="setting-options" id="displayModeOptions">
+                    <button class="setting-opt active" data-display="dark">🌙 Gece</button>
+                    <button class="setting-opt" data-display="light">☀️ Gündüz</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">🎨 Tema</div>
+                <div class="setting-options" id="themeOptions">
+                    <div class="theme-dot active" data-theme="default" title="Varsayılan"></div>
+                    <div class="theme-dot" data-theme="ocean" title="Okyanus"></div>
+                    <div class="theme-dot" data-theme="forest" title="Orman"></div>
+                    <div class="theme-dot" data-theme="sunset" title="Gün Batımı"></div>
+                    <div class="theme-dot" data-theme="midnight" title="Gece Yarısı"></div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">📝 Soru Sayısı</div>
+                <div class="setting-options" id="questionCountOptions">
+                    <button class="setting-opt" data-count="10">10</button>
+                    <button class="setting-opt active" data-count="20">20</button>
+                    <button class="setting-opt" data-count="30">30</button>
+                    <button class="setting-opt" data-count="50">50</button>
+                    <button class="setting-opt" data-count="999">Tümü</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-label">🗺️ Harita Rengi</div>
+                <div class="setting-options" id="mapColorOptions">
+                    <button class="setting-opt active" data-map-color="default">Koyu Mavi</button>
+                    <button class="setting-opt" data-map-color="dark">Siyah</button>
+                    <button class="setting-opt" data-map-color="green">Yeşil</button>
+                    <button class="setting-opt" data-map-color="purple">Mor</button>
+                </div>
+            </div>
+
+            <!-- Hediye Kodu (Gizli) -->
+            <div class="setting-group">
+                <div class="setting-label">🎁 Hediye Kodu</div>
+                <div class="gift-code-row">
+                    <input type="text" id="giftCodeInput" class="gift-code-input" placeholder="Kodu girin..." maxlength="10" autocomplete="off" />
+                    <button id="giftCodeBtn" class="gift-code-btn">✓</button>
+                </div>
+                <div id="giftCodeMsg" class="gift-code-msg hidden"></div>
+            </div>
+
+            <button id="settingsCloseBtn" class="settings-close-btn">Tamam ✓</button>
+        </div>
+    </div>
+
+    <!-- Purchase / Unlock Modal -->
+    <div id="purchaseOverlay" class="purchase-overlay hidden">
+        <div class="purchase-card">
+            <div class="purchase-close" id="purchaseCloseBtn">✕</div>
+            <div class="purchase-icon">🔒</div>
+            <h3 class="purchase-title">Premium İçerik</h3>
+            <p class="purchase-desc">Bu kategori premium içeriğe aittir. Tüm kategorilere sınırsız erişim için premium’e geçin!</p>
+            <div class="purchase-features">
+                <div class="purchase-feature">✅ 27 kategori, 400+ soru</div>
+                <div class="purchase-feature">✅ Tüm modlar: Hızlı Tur, Tahmin, Bul</div>
+                <div class="purchase-feature">✅ Başarı rozetleri ve istatistikler</div>
+                <div class="purchase-feature">✅ Ömrür boyu erişim, reklamsız</div>
+            </div>
+            <button id="purchaseBtn" class="purchase-buy-btn">💎 Premium Al</button>
+            <p class="purchase-hint">Hediye kodunuz mu var? Ayarlar > Hediye Kodu alanına girin.</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="data_landforms.js"></script>
+    <script src="data_plains_lakes.js"></script>
+    <script src="data_nature.js"></script>
+    <script src="data_economy.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
