@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Uyarıları susturmak için en stabil sürüme sabitledik
+          node-version: '20'
 
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
@@ -29,11 +29,12 @@ jobs:
       - name: Configure Bubblewrap
         run: |
           mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"${ANDROID_SDK_ROOT}\"}" > ~/.bubblewrap/config.json
+          # Burada ANDROID_HOME kullanarak asıl hatayı çözüyoruz
+          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"${ANDROID_HOME}\"}" > ~/.bubblewrap/config.json
 
       - name: Build Android App Bundle
         run: |
-          # twa-manifest.json dosyasını kullanarak sessizce paketliyoruz
+          # twa-manifest.json dosyasını kullanarak paketliyoruz
           bubblewrap build --project=twa-manifest.json --yes
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
