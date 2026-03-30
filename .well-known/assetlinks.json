@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.kpss.cografya",
+    "sha256_cert_fingerprints": ["99:84:E7:34:DB:C7:DA:C1:F9:4C:D8:DA:F7:83:85:A7:7F:0F:D8:55:49:6D:15:EA:BE:4B:61:6A:80:84:F3:97"]
+  }
+}]
