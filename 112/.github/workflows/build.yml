@@ -2,26 +2,25 @@ name: Android App Build (TWA)
 
 on:
   push:
-    branches: [ main ] # Kodu her güncellediğinde otomatik çalışır
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # v4'e güncellendi
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4 # v4'e güncellendi
         with:
-          node-version: '18'
+          node-version: '20' # Node sürümünü de güncelledik
 
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
       - name: Build Android App Bundle (.aab)
         run: |
-          # Bubblewrap ile sessizce paketleme yapıyoruz
           bubblewrap init --manifest=https://cografya25.netlify.app/manifest.json --allowlist=https://cografya25.netlify.app/
           bubblewrap build --signingKeyPath=./my-release-key.keystore --signingKeyAlias=${{ secrets.KEY_ALIAS }}
         env:
@@ -29,7 +28,7 @@ jobs:
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
       - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # İşte hata veren yer burasıydı, v4 yaptık
         with:
           name: release-aab
           path: ./*.aab
