@@ -1,4 +1,4 @@
-name: Android-Build
+name: Android-Build-Final
 
 on:
   push:
@@ -7,8 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
     steps:
       - name: Checkout Code
@@ -23,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '20' # Uyarıları susturmak için en stabil sürüme sabitledik
 
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
@@ -35,7 +33,7 @@ jobs:
 
       - name: Build Android App Bundle
         run: |
-          # twa-manifest.json dosyasını kullanarak paketliyoruz
+          # twa-manifest.json dosyasını kullanarak sessizce paketliyoruz
           bubblewrap build --project=twa-manifest.json --yes
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -44,5 +42,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-aab
+          name: kpss-cografya-aab
           path: ./*.aab
