@@ -12,18 +12,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Çökmemesi için en stabil Node sürümüne sabitledik
+      # İşte sihirli dokunuş: Node 18! (Yeni sürümler çöktüğü için buna döndük)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      # Ayar dosyası vermiyoruz, --yes ile "Kendi SDK'nı kendin kur" diyoruz
       - name: Build Android App Bundle
         run: |
+          # Node 18 sayesinde --yes parametresi artık çökmeyecek
           bubblewrap build --project=twa-manifest.json --yes
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
