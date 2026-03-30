@@ -12,12 +12,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
+      # Çökmemesi için en stabil Node sürümüne sabitledik
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -26,12 +21,7 @@ jobs:
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      - name: Configure Bubblewrap (Susturucu Adım)
-        run: |
-          mkdir -p ~/.bubblewrap
-          # Ne sorarsa sorsun, cevapları buraya çiviledik:
-          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"/usr/local/lib/android/sdk\"}" > ~/.bubblewrap/config.json
-
+      # Ayar dosyası vermiyoruz, --yes ile "Kendi SDK'nı kendin kur" diyoruz
       - name: Build Android App Bundle
         run: |
           bubblewrap build --project=twa-manifest.json --yes
