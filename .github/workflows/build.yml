@@ -12,19 +12,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # İşte sihirli dokunuş: Node 18! (Yeni sürümler çöktüğü için buna döndük)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      - name: Build Android App Bundle
+      - name: Build Android App Bundle (Balyoz Yöntemi)
         run: |
-          # Node 18 sayesinde --yes parametresi artık çökmeyecek
-          bubblewrap build --project=twa-manifest.json --yes
+          # 'yes' komutu ile robotun "Yükleyeyim mi?" sorusuna otomatik "y" basılı tutuyoruz
+          yes | bubblewrap build --project=twa-manifest.json
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
